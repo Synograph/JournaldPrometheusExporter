@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Run Tests on Debian
-    runs-on: debian:latest
+    runs-on: debian
 
     steps:
       - name: Checkout code
