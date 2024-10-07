@@ -1,0 +1,59 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger this workflow only on version tags (e.g., v1.0.0)
+
+jobs:
+  build:
+    name: Build for different architectures
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        goarch: [386, amd64, arm, arm64]  # Different architectures to build for
+        goos: [linux, darwin, windows]    # You can add more OS if needed
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'  # You can specify your Go version here
+
+      - name: Build binary
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o myapp-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/myapp  # Customize this with your entrypoint
+
+      - name: Upload binaries as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: myapp-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: myapp-${{ matrix.goos }}-${{ matrix.goarch }}
+
+  release:
+    name: Release binaries
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            myapp-linux-386
+            myapp-linux-amd64
+            myapp-linux-arm
+            myapp-linux-arm64
+            myapp-darwin-386
+            myapp-darwin-amd64
+            myapp-windows-386
+            myapp-windows-amd64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

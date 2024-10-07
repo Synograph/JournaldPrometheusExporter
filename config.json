@@ -1,0 +1,98 @@
+{
+  "debug": true,
+  "metrics_port": 9100,
+  "metrics_path": "/metrics",
+  "events": [
+    {
+      "name": "oom_killer_events",
+      "description": "Out of memory killer events.",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-k"],
+      "match_patterns": ["Out of memory", "oom-kill"]
+    },
+    {
+      "name": "service_failures",
+      "description": "Systemd service failure events.",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-u", "*"],
+      "match_patterns": ["Failed to start", "Service entered failed state"]
+    },
+    {
+      "name": "disk_io_errors",
+      "description": "Disk I/O errors (e.g., file system issues).",
+      "log_command": ["journalctl", "--follow", "-p", "3"],
+      "match_patterns": ["I/O error", "Read-only filesystem", "blk_update_request", "Buffer I/O error"]
+    },
+    {
+      "name": "kernel_panic",
+      "description": "Kernel panic events.",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-k"],
+      "match_patterns": ["kernel panic", "Kernel panic"]
+    },
+    {
+      "name": "cpu_hardware_errors",
+      "description": "CPU hardware errors reported by the system.",
+      "log_command": ["journalctl", "--follow", "-p", "3"],
+      "match_patterns": ["Machine check error", "hardware error", "mce: [Hardware Error]"]
+    },
+    {
+      "name": "memory_errors",
+      "description": "Memory hardware errors (e.g., ECC).",
+      "log_command": ["journalctl", "--follow", "-p", "3"],
+      "match_patterns": ["EDAC MC", "Memory Error", "ecc error"]
+    },
+    {
+      "name": "network_failures",
+      "description": "Network-related failures (e.g., interface down, connection issues).",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-t", "networkd"],
+      "match_patterns": ["Network unreachable", "Link is down", "network interface down"]
+    },
+    {
+      "name": "authentication_failures",
+      "description": "Authentication failures (e.g., SSH or sudo failed attempts).",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-t", "sshd"],
+      "match_patterns": ["authentication failure", "Invalid user", "Failed password", "Failed login"]
+    },
+    {
+      "name": "disk_space_warnings",
+      "description": "Disk space warnings (e.g., low free space, disk full).",
+      "log_command": ["journalctl", "--follow", "-p", "3"],
+      "match_patterns": ["filesystem full", "No space left on device", "disk quota exceeded"]
+    },
+    {
+      "name": "usb_device_errors",
+      "description": "USB device errors (e.g., device disconnects, failed mounts).",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-t", "kernel"],
+      "match_patterns": ["usb disconnect", "unable to enumerate USB device", "device descriptor read"]
+    },
+    {
+      "name": "swap_memory_warnings",
+      "description": "Warnings about swap usage or issues with swap memory.",
+      "log_command": ["journalctl", "--follow", "-p", "3"],
+      "match_patterns": ["swap exhausted", "swap overcommitted", "Swap allocation failed"]
+    },
+    {
+      "name": "hardware_temperature_warnings",
+      "description": "Temperature warnings related to hardware overheating.",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-t", "kernel"],
+      "match_patterns": ["Temperature above threshold", "thermal zone", "CPU temperature"]
+    },
+    {
+      "name": "filesystem_corruption",
+      "description": "Filesystem corruption events or warnings.",
+      "log_command": ["journalctl", "--follow", "-p", "3"],
+      "match_patterns": ["fsck", "superblock", "corrupt filesystem"]
+    },
+    {
+      "name": "cron_job_failures",
+      "description": "Failures or errors in cron jobs or scheduled tasks.",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-u", "cron"],
+      "match_patterns": ["failed to run", "cron job failed", "error during cron execution"]
+    },
+    {
+      "name": "firewall_dropped_packets",
+      "description": "Packets dropped by the firewall (e.g., iptables or firewalld).",
+      "log_command": ["journalctl", "--follow", "-p", "3", "-t", "kernel"],
+      "match_patterns": ["iptables dropped", "firewalld: drop", "Packet dropped"]
+    }
+  ]
+}
+
