@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -45,15 +46,11 @@ func LoadConfig(filename string) error {
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config)
-	if err != nil {
-		return err
-	}
-	return nil
+	return decoder.Decode(&config)
 }
 
 // monitorEvent creates a goroutine that watches system logs and increments Prometheus counters
-func monitorEvent(event EventMonitor) {
+func monitorEvent(ctx context.Context, event EventMonitor) {
 	defer wg.Done()
 
 	if config.Debug {
@@ -61,24 +58,24 @@ func monitorEvent(event EventMonitor) {
 		fmt.Printf("Launching journalctl command: '%s'\n", strings.Join(event.LogCommand, " "))
 	}
 
-	cmd := exec.Command(event.LogCommand[0], event.LogCommand[1:]...)
+	cmd := exec.CommandContext(ctx, event.LogCommand[0], event.LogCommand[1:]...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatalf("Error creating pipe for journalctl: %v", err)
+		log.Printf("Error creating pipe for journalctl: %v", err)
+		return
 	}
 
 	if err := cmd.Start(); err != nil {
-		log.Fatalf("Error starting journalctl: %v", err)
+		log.Printf("Error starting journalctl: %v", err)
+		return
 	}
 
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		line := scanner.Text()
-
 		for _, pattern := range event.MatchPatterns {
 			if strings.Contains(line, pattern) {
 				metricsMap[event.Name].With(prometheus.Labels{"pattern": pattern}).Inc()
-
 				if config.Debug {
 					// Print the full line and matched pattern for debugging
 					fmt.Printf("Matched pattern: '%s' in event: '%s'\nFull log line: %s\n", pattern, event.Name, line)
@@ -98,8 +95,7 @@ func main() {
 	flag.Parse()
 
 	// Load JSON configuration
-	err := LoadConfig(*configFile)
-	if err != nil {
+	if err := LoadConfig(*configFile); err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
@@ -115,14 +111,13 @@ func main() {
 			},
 			[]string{"pattern"},
 		)
-
 		// Register the counter with Prometheus
 		prometheus.MustRegister(counter)
 		metricsMap[event.Name] = counter
 
 		// Start monitoring the event in a separate goroutine
 		wg.Add(1)
-		go monitorEvent(event)
+		go monitorEvent(context.Background(), event)
 	}
 
 	// Start the HTTP server for Prometheus metrics
@@ -130,10 +125,11 @@ func main() {
 	listenAddr := fmt.Sprintf(":%d", config.MetricsPort)
 	log.Printf("Starting Prometheus metrics server on %s\n", listenAddr)
 
-	// Wait for all event monitoring goroutines to finish
+	// Run HTTP server in a separate goroutine
 	go func() {
 		log.Fatal(http.ListenAndServe(listenAddr, nil))
 	}()
 
+	// Wait for all event monitoring goroutines to finish
 	wg.Wait()
 }

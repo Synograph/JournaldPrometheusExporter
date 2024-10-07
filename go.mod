@@ -1,4 +1,4 @@
-module dmesg-exporter
+module journald-prometheus-exporter
 
 go 1.23.1
 
