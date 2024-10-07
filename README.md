@@ -1,4 +1,4 @@
-# Prometheus System Event Exporter
+# Prometheus Journald Exporter
 
 This Prometheus exporter monitors critical system events using `journalctl` and exposes metrics on a configurable HTTP endpoint for Prometheus scraping.
 
