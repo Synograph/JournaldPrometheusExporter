@@ -26,13 +26,13 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o myapp-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/myapp  # Customize this with your entrypoint
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o journaldPrometheusExporter-${{ matrix.goos }}-${{ matrix.goarch }} ./  # Customize this with your entrypoint
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: myapp-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: myapp-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: journaldPrometheusExporter-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: journaldPrometheusExporter-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
     name: Release binaries
@@ -46,14 +46,14 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            myapp-linux-386
-            myapp-linux-amd64
-            myapp-linux-arm
-            myapp-linux-arm64
-            myapp-darwin-386
-            myapp-darwin-amd64
-            myapp-windows-386
-            myapp-windows-amd64
+            journaldPrometheusExporter-linux-386
+            journaldPrometheusExporter-linux-amd64
+            journaldPrometheusExporter-linux-arm
+            journaldPrometheusExporter-linux-arm64
+            journaldPrometheusExporter-darwin-386
+            journaldPrometheusExporter-darwin-amd64
+            journaldPrometheusExporter-windows-386
+            journaldPrometheusExporter-windows-amd64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
