@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*.*.*'  # Trigger this workflow only on version tags (e.g., v1.0.0)
 
+env:
+  BINARY_NAME: journaldPrometheusExporter  # Define your binary name here
+
 jobs:
   test:
     name: Run Tests on Debian
@@ -44,13 +47,13 @@ jobs:
 
       - name: Build binary
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o journaldPrometheusExporter-${{ matrix.goos }}-${{ matrix.goarch }} ./  # Customize this with your entrypoint
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }} ./  # Customize this with your entrypoint
 
       - name: Upload binaries as artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: journaldPrometheusExporter-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: journaldPrometheusExporter-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}
 
   release:
     name: Release binaries
@@ -61,18 +64,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-linux-amd64
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            journaldPrometheusExporter-linux-386
-            journaldPrometheusExporter-linux-amd64
-            journaldPrometheusExporter-linux-arm
-            journaldPrometheusExporter-linux-arm64
-            journaldPrometheusExporter-darwin-386
-            journaldPrometheusExporter-darwin-amd64
-            journaldPrometheusExporter-windows-386
-            journaldPrometheusExporter-windows-amd64
+            ${{ env.BINARY_NAME }}-linux-amd64
+            ${{ env.BINARY_NAME }}-linux-arm
+            ${{ env.BINARY_NAME }}-linux-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
