@@ -1,3 +1,4 @@
+
 # Prometheus Journald Exporter
 
 This Prometheus exporter monitors critical system events using `journalctl` and exposes metrics on a configurable HTTP endpoint for Prometheus scraping.
@@ -62,4 +63,63 @@ The exporter is highly configurable through a JSON configuration file. Below is 
     // ... Other events omitted for brevity
   ]
 }
+```
+
+## Configuration Fields:
+
+- `debug`: Set to true to enable detailed log output for debugging purposes.
+- `metrics_port`: The port on which the Prometheus server will scrape metrics (default: 9100).
+- `metrics_path`: The HTTP path to expose metrics (default: /metrics).
+- `events`: A list of system events to monitor:
+- `name`: The metric name exposed in Prometheus.
+- `description`: Description of the metric.
+- `log_command`: Command to follow logs (via journalctl) for each event.
+- `match_patterns`: Log patterns that trigger a Prometheus counter increase.
+You can add, remove, or customize these events to suit your specific needs.
+
+## Running the Exporter
+To start the exporter:
+- Ensure the config.json file is correctly configured.
+Run the exporter:
+```bash
+    ./system-event-exporter -config config.json
+```
+This will start the exporter with the specified configuration and expose the metrics at the defined port and path (default: http://localhost:9100/metrics).
+
+## Debugging
+If `debug` is enabled in the configuration, the exporter will print matched log patterns for each monitored event to the console.
+
+```json
+{
+  "debug": true
+  [...]
+}
+```
+
+Use this feature to verify that the correct logs are being monitored and matched.
+
+## Prometheus Integration
+To monitor the exported metrics with Prometheus, add the following to your Prometheus configuration (prometheus.yml):
+
+```yaml
+scrape_configs:
+  - job_name: "system_event_exporter"
+    static_configs:
+      - targets: ["localhost:9100"]
+      - 
+```
+## Example Metrics
+Once running, the exporter will expose Prometheus metrics for each event defined in the configuration. Example metrics:
+
+```
+# HELP oom_killer_events Out of memory killer events.
+# TYPE oom_killer_events counter
+oom_killer_events 3
+
+# HELP service_failures Systemd service failure events.
+# TYPE service_failures counter
+service_failures 1
+```
+These metrics can then be scraped by Prometheus and used for alerting and visualization. 
+
 
