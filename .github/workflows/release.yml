@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build, Test, and Release
 
 on:
   push:
@@ -6,14 +6,9 @@ on:
       - 'v*.*.*'  # Trigger this workflow only on version tags (e.g., v1.0.0)
 
 jobs:
-  build:
-    name: Build for different architectures
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        goarch: [386, amd64, arm, arm64]  # Different architectures to build for
-        goos: [linux, darwin, windows]    # You can add more OS if needed
+  test:
+    name: Run Tests on Debian
+    runs-on: debian:latest
 
     steps:
       - name: Checkout code
@@ -22,7 +17,30 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'  # You can specify your Go version here
+          go-version: '1.23'  # Specify your Go version here
+
+      - name: Run Go tests
+        run: |
+          go test -v ./...
+
+  build:
+    name: Build for different architectures
+    runs-on: ubuntu-latest
+    needs: test  # Ensure this runs only after the test job succeeds
+
+    strategy:
+      matrix:
+        goarch: [386, amd64, arm, arm64]  # Different architectures to build for
+        goos: [linux, darwin, windows]    # Add more OS if needed
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'  # Specify your Go version here
 
       - name: Build binary
         run: |
@@ -37,7 +55,8 @@ jobs:
   release:
     name: Release binaries
     runs-on: ubuntu-latest
-    needs: build
+    needs: build  # Ensure this runs only after the build job
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
