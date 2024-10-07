@@ -68,6 +68,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.BINARY_NAME }}-linux-amd64
+          
+      - name: Download build artifacts for arm
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-linux-arm
+
+      - name: Download build artifacts for arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-linux-arm64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -78,4 +88,3 @@ jobs:
             ${{ env.BINARY_NAME }}-linux-arm64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
