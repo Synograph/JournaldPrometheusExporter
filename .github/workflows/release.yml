@@ -30,8 +30,8 @@ jobs:
 
     strategy:
       matrix:
-        goarch: [386, amd64, arm, arm64]  # Different architectures to build for
-        goos: [linux, darwin, windows]    # Add more OS if needed
+        goarch: [amd64, arm, arm64]  # Different architectures to build for
+        goos: [linux]    # Add more OS if needed
 
     steps:
       - name: Checkout code
